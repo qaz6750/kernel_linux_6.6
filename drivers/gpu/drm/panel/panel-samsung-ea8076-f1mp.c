@@ -334,6 +334,7 @@ static void samsung_ea8076_f1mp_remove(struct mipi_dsi_device *dsi)
 
 static const struct of_device_id samsung_ea8076_f1mp_of_match[] = {
 	{ .compatible = "samsung,ea8076-f1mp" },
+	{ }
 };
 MODULE_DEVICE_TABLE(of, samsung_ea8076_f1mp_of_match);
 
