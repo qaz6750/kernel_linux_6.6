@@ -36,9 +36,9 @@
 / {
 	model = "xiaomi Mi 9";
 	compatible = "xiaomi,cepheus", "qcom,sm8150-cdp", "qcom,sm8150";
-	qcom,msm-id = <339 0x20000>;
-	qcom,pmic-name = "PM8150";
+	chassis-type = "handset";
 	qcom,board-id = <37 0>;
+	qcom,msm-id = <339 0x20000>;
 
 	aliases {
 		serial0 = &uart2;
@@ -51,6 +51,7 @@
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
+		stdout-path = "serial0:115200n8";
 
 		framebuffer: framebuffer@9c000000 {
 			compatible = "simple-framebuffer";
@@ -876,7 +877,7 @@
 	snps,has-lpm-erratum;
 	snps,hird-threshold = /bits/ 8 <0x10>;
 	maximum-speed = "high-speed";
-	dr_mode = "host";
+	dr_mode = "peripheral";
 };
 
 &usb_1_hsphy {
