@@ -43,11 +43,10 @@
 #include <linux/i2c-dev.h>
 #include <linux/spi/spi.h>
 #include <linux/completion.h>
-#ifdef CONFIG_SECURE_TOUCH
+
 #include <linux/atomic.h>
 #include <linux/sysfs.h>
 #include <linux/hardirq.h>
-#endif
 
 #include <linux/gpio.h>
 #include <linux/of_gpio.h>
@@ -70,16 +69,16 @@
 #include <linux/pinctrl/consumer.h>
 
 #include "fts.h"
-#include "fts_lib/ftsCompensation.h"
-#include "fts_lib/ftsCore.h"
-#include "fts_lib/ftsIO.h"
-#include "fts_lib/ftsError.h"
-#include "fts_lib/ftsFlash.h"
-#include "fts_lib/ftsFrame.h"
-#include "fts_lib/ftsGesture.h"
-#include "fts_lib/ftsTest.h"
-#include "fts_lib/ftsTime.h"
-#include "fts_lib/ftsTool.h"
+#include "ftsCompensation.h"
+#include "ftsCore.h"
+#include "ftsIO.h"
+#include "ftsError.h"
+#include "ftsFlash.h"
+#include "ftsFrame.h"
+#include "ftsGesture.h"
+#include "ftsTest.h"
+#include "ftsTime.h"
+#include "ftsTool.h"
 
 #define PROC_SYMLINK_PATH "touchpanel"
 
@@ -2678,7 +2677,7 @@ static ssize_t fts_fod_test_store(struct device *dev,
 }
 #endif
 
-#ifdef CONFIG_SECURE_TOUCH
+
 static void fts_secure_touch_notify (struct fts_ts_info *info)
 {
 	/*might sleep*/
@@ -2866,7 +2865,7 @@ static ssize_t fts_secure_touch_show (struct device *dev, struct device_attribut
 	}
 	return scnprintf(buf, PAGE_SIZE, "%d", value);
 }
-#endif
+
 
 static ssize_t fts_wake_gesture_store(struct device *dev,
 					struct device_attribute *attr,
@@ -3035,10 +3034,9 @@ static DEVICE_ATTR(fod_status, (S_IRUGO | S_IWUSR | S_IWGRP),
 static DEVICE_ATTR(fod_test, (S_IRUGO | S_IWUSR | S_IWGRP), NULL, fts_fod_test_store);
 #endif
 
-#ifdef CONFIG_SECURE_TOUCH
 DEVICE_ATTR(secure_touch_enable, (S_IRUGO | S_IWUSR | S_IWGRP), fts_secure_touch_enable_show,  fts_secure_touch_enable_store);
 DEVICE_ATTR(secure_touch, (S_IRUGO | S_IWUSR | S_IWGRP), fts_secure_touch_show,  NULL);
-#endif
+
 /**@}*/
 /**@}*/
 
@@ -4029,11 +4027,9 @@ static irqreturn_t fts_event_handler(int irq, void *ts_info)
 		return IRQ_HANDLED;
 	}
 
-#ifdef CONFIG_SECURE_TOUCH
 	if (!fts_secure_filter_interrupt(info)) {
 		return IRQ_HANDLED;
 	}
-#endif
 
 	info->irq_status = true;
 	error = fts_writeReadU8UX(regAdd, 0, 0, data, FIFO_EVENT_SIZE,
@@ -4356,11 +4352,11 @@ static int fts_chip_initialization(struct fts_ts_info *info, int init_type)
 static irqreturn_t fts_interrupt_handler(int irq, void *handle)
 {
 	struct fts_ts_info *info = handle;
-#ifdef CONFIG_SECURE_TOUCH
+
 	if (!fts_secure_filter_interrupt(info)) {
 		return IRQ_HANDLED;
 	}
-#endif
+
 	disable_irq_nosync(info->client->irq);
 	queue_work(info->event_wq, &info->work);
 
@@ -4807,10 +4803,10 @@ static void fts_resume_work(struct work_struct *work)
 	struct fts_ts_info *info;
 
 	info = container_of(work, struct fts_ts_info, resume_work);
+
 	fts_disableInterrupt();
-#ifdef CONFIG_SECURE_TOUCH
 	fts_secure_stop(info, true);
-#endif
+
 	info->resume_bit = 1;
 #ifdef CONFIG_FTS_FOD_AREA_REPORT
 	if (!info->fod_pressed) {
@@ -4836,9 +4832,9 @@ static void fts_suspend_work(struct work_struct *work)
 	struct fts_ts_info *info;
 
 	info = container_of(work, struct fts_ts_info, suspend_work);
-#ifdef CONFIG_SECURE_TOUCH
+
 	fts_secure_stop(info, true);
-#endif
+
 	fts_disableInterrupt();
 	info->resume_bit = 0;
 	fts_mode_handler(info, 0);
@@ -5837,7 +5833,6 @@ static const struct file_operations tpdbg_operations = {
 };
 #endif
 
-#ifdef CONFIG_SECURE_TOUCH
 int fts_secure_init(struct fts_ts_info *info)
 {
 	int ret;
@@ -5890,8 +5885,6 @@ void fts_secure_remove(struct fts_ts_info *info)
 	sysfs_remove_file(&info->dev->kobj, &dev_attr_secure_touch.attr);
 	kfree(scr_info);
 }
-
-#endif
 
 
 /**
@@ -6192,7 +6185,7 @@ static int fts_probe(struct spi_device *client)
 	}
 	/*update_hardware_info(TYPE_TOUCH, 4);*/
 
-#ifdef CONFIG_SECURE_TOUCH
+
 	logError(1, "%s %s create secure touch file...\n", tag, __func__);
 	error = fts_secure_init(info);
 	if (error < 0) {
@@ -6201,9 +6194,8 @@ static int fts_probe(struct spi_device *client)
 	}
 	logError(1, "%s %s create secure touch file successful\n", tag, __func__);
 	fts_secure_stop(info, 1);
-#endif
 
-#ifdef CONFIG_I2C_BY_DMA
+
 	/*dma buf init*/
 	info->dma_buf = (struct fts_dma_buf *)kzalloc(sizeof(*info->dma_buf), GFP_KERNEL);
 	if (!info->dma_buf) {
@@ -6221,7 +6213,6 @@ static int fts_probe(struct spi_device *client)
 		logError(1, "%s %s:ERROR alloc mem failed!", tag, __func__);
 		goto ProbeErrorExit_7;
 	}
-#endif
 
 	error = fts_get_lockdown_info(info->lockdown_info, info);
 
@@ -6354,17 +6345,17 @@ ProbeErrorExit_8:
 	class_destroy(info->fts_tp_class);
 	info->fts_tp_class = NULL;
 ProbeErrorExit_7:
-#ifdef CONFIG_SECURE_TOUCH
+
 	fts_secure_remove(info);
-#endif
-#ifdef CONFIG_I2C_BY_DMA
+
+
 	if (info->dma_buf)
 		kfree(info->dma_buf);
 	if (info->dma_buf->rdBuf)
 		kfree(info->dma_buf->rdBuf);
 	if (info->dma_buf->wrBuf)
 		kfree(info->dma_buf->wrBuf);
-#endif
+
 /*
 #ifdef CONFIG_DRM
 	msm_drm_unregister_client(&info->notifier);
@@ -6443,9 +6434,9 @@ static int fts_remove(struct spi_device *client)
 	fts_enable_reg(info, false);
 	fts_get_reg(info, false);
 	fts_info = NULL;
-#ifdef CONFIG_SECURE_TOUCH
+
 	fts_secure_remove(info);
-#endif
+
 	/* free all */
 	kfree(info);
 
@@ -6456,11 +6447,10 @@ static int fts_remove(struct spi_device *client)
 * Struct which contains the compatible names that need to match with the definition of the device in the device tree node
 */
 static struct of_device_id fts_of_match_table[] = {
-	{
-	 .compatible = "st,fts",
-	 },
+	{.compatible = "st,fts",},
 	{},
 };
+MODULE_DEVICE_TABLE(of, fts_of_match_table);
 
 #ifdef I2C_INTERFACE
 static const struct i2c_device_id fts_device_id[] = {

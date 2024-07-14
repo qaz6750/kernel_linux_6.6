@@ -35,8 +35,8 @@
 #include <linux/sysfs.h>
 #include <linux/notifier.h>
 #include <linux/mutex.h>
-#include "fts_lib/ftsSoftware.h"
-#include "fts_lib/ftsHardware.h"
+#include "ftsSoftware.h"
+#include "ftsHardware.h"
 #include <linux/completion.h>
 /****************** CONFIGURATION SECTION ******************/
 /** @defgroup conf_section	 Driver Configuration Section
@@ -208,7 +208,6 @@ extern char tag[8];
 typedef void (*event_dispatch_handler_t)
  (struct fts_ts_info *info, unsigned char *data);
 
-#ifdef CONFIG_SECURE_TOUCH
 struct fts_secure_delay {
 	bool palm_pending;
 	int palm_value;
@@ -225,15 +224,14 @@ struct fts_secure_info {
 	struct mutex palm_lock;
 	void *fts_info;
 };
-#endif
 
-#ifdef CONFIG_I2C_BY_DMA
+
 struct fts_dma_buf {
 	struct mutex dmaBufLock;
 	u8 *rdBuf;
 	u8 *wrBuf;
 };
-#endif
+
 
 
 /**
@@ -336,12 +334,11 @@ struct fts_ts_info {
 	struct class *fts_tp_class;
 	struct device *fts_touch_dev;
 	char *current_clicknum_file;
-#ifdef CONFIG_SECURE_TOUCH
+
 	struct fts_secure_info *secure_info;
-#endif
-#ifdef CONFIG_I2C_BY_DMA
+
 	struct fts_dma_buf *dma_buf;
-#endif
+
 	bool lockdown_is_ok;
 	bool irq_status;
 	wait_queue_head_t 	wait_queue;
