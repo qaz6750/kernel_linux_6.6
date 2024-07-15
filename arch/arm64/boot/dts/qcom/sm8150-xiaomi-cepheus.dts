@@ -295,7 +295,7 @@
 		vdda_usb_ss_dp_core_2:
 		vdda_qlink_lv:
 		vdda_qlink_lv_ck:
-		vreg_l5a_0p875: ldo5 {
+		vreg_l5a_0p8: ldo5 {
 			regulator-min-microvolt = <880000>;
 			regulator-max-microvolt = <880000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
@@ -623,7 +623,7 @@
 
 &mdss_dsi0_phy {
 	status = "okay";
-	vdds-supply = <&vreg_l5a_0p875>;
+	vdds-supply = <&vreg_l5a_0p8>;
 };
 
 &mdss {
@@ -895,27 +895,24 @@
 };
 
 &usb_1 {
+	/* USB 2.0 only */
+	qcom,select-utmi-as-pipe-clk;
 	status = "okay";
 };
 
 &usb_1_dwc3 {
-	snps,has-lpm-erratum;
-	snps,hird-threshold = /bits/ 8 <0x10>;
-	maximum-speed = "high-speed";
 	dr_mode = "peripheral";
+	maximum-speed = "high-speed";
+	/* Remove USB3 phy */
+	phys = <&usb_1_hsphy>;
+	phy-names = "usb2-phy";
 };
 
 &usb_1_hsphy {
-	status = "okay";
-	vdda-pll-supply = <&vreg_l5a_0p875>;
+	vdda-pll-supply = <&vreg_l5a_0p8>;
 	vdda18-supply = <&vreg_l12a_1p8>;
 	vdda33-supply = <&vreg_l2a_3p1>;
-};
-
-&usb_1_qmpphy {
 	status = "okay";
-	vdda-phy-supply = <&vreg_l3c_1p2>;
-	vdda-pll-supply = <&vreg_l5a_0p875>;
 };
 
 &wcd9340 {
