@@ -134,14 +134,14 @@ static pid_t get_pid_by_name(const char *name)
 	int pid = 0;
 
 	rcu_read_lock();
-	do_each_thread(g, t) {
+	for_each_process_thread(g, t) {
 		if (rcu_break(&max_count, &batch_count, g, t))
 			goto unlock;
 		if (!strncmp(t->comm, name, TASK_COMM_LEN)) {
 			pid = t->tgid;
 			goto unlock;
 		}
-	} while_each_thread(g, t);
+	}
 
 unlock:
 	rcu_read_unlock();
@@ -176,12 +176,12 @@ static void refresh_appspawn_pids(void)
 	struct task_struct *t = NULL;
 
 	rcu_read_lock();
-	do_each_thread(g, t) {
+	for_each_process_thread(g, t) {
 		if (rcu_break(&max_count, &batch_count, g, t))
 			goto unlock;
 		if (!strncmp(t->comm, "appspawn", TASK_COMM_LEN))
 			appspawn_pid = t->tgid;
-	} while_each_thread(g, t);
+	}
 unlock:
 	rcu_read_unlock();
 }

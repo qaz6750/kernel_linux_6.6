@@ -209,8 +209,10 @@ static int htuser_list_store_on(char *tmp, size_t len, int pid)
 	pr_info("process %d set to enable, timeout=%ld\n", pid, sec);
 	htuser_list_insert(pid, sec / HEARTBEAT_TIME);
 	if (!is_registered) {
+		/*
 		profile_event_register(PROFILE_TASK_EXIT,
 			&htuser_process_notify);
+		*/	
 		is_registered = true;
 	}
 
